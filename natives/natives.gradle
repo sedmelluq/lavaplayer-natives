@@ -1,6 +1,8 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
 def getBuildParameters(base) {
+  // Is safe on Mac, as Apple locks down the arch to JVM.
+  def bitSuffix = System.getProperty("os.arch");
   if (Os.isFamily(Os.FAMILY_WINDOWS)) {
     return [
         'identifier': "win-x86-64",
@@ -11,7 +13,7 @@ def getBuildParameters(base) {
     ]
   } else if (Os.isFamily(Os.FAMILY_MAC)) {
     return [
-        'identifier': 'darwin-x86-64',
+        'identifier': 'darwin-' + bitSuffix,
         'library': "lib${base}.dylib",
         'setupArguments': ['-DCMAKE_BUILD_TYPE=Release'],
         'buildArguments': [],
