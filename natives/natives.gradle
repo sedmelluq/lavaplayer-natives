@@ -11,7 +11,7 @@ def getBuildParameters(base) {
     ]
   } else if (Os.isFamily(Os.FAMILY_MAC)) {
     return [
-        'identifier': 'darwin',
+        'identifier': 'darwin-x86-64',
         'library': "lib${base}.dylib",
         'setupArguments': ['-DCMAKE_BUILD_TYPE=Release'],
         'buildArguments': [],
