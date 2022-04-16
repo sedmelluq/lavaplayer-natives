@@ -98,7 +98,7 @@ task load { doLast {
     }
   }
 
-  if (!Os.isFamily(Os.FAMILY_WINDOWS) && !file("$projectDir/mp3/mpg123-${mpg123Version}").exists()) {
+  if (!file("$projectDir/mp3/mpg123-${mpg123Version}").exists()) {
     def downloadPath = "$buildDir/tmp/temp.tar.bz2"
     def unpackPath = "$buildDir"
 
@@ -164,6 +164,31 @@ def buildOpusOnWindows(force) {
 
     libs.each {
       assert file("$projectDir/opus/opus-${opusVersion}/win32/VS2015/${platformName}/Release/${it}.lib").renameTo("${base}/${it}.lib")
+    }
+  }
+}
+
+def buildMpgOnWindows(force) {
+  def base = "$projectDir/libs/64"
+  def libs = ['mpg123']
+  def present = libs.every { file("${base}/${it}.lib").exists() }
+
+  if (force || !present) {
+    file(base).deleteDir()
+    file(base).mkdirs()
+
+    def devenv = getDevEnvLocation()
+    def platformName = "x64"
+
+    def process = [devenv,  "mpg123.sln", "/Build", "Release|${platformName}", "/Project", "libmpg123", "/ProjectConfig", "Release_Generic|${platformName}"].
+            execute(null as String[], file("$projectDir/mp3/mpg123-${mpg123Version}/ports/MSVC++/2015/win32"))
+
+    process.waitForProcessOutput(System.out as Appendable, System.err)
+
+    libs.each {
+      println "$projectDir/mp3/mpg123-${mpg123Version}/ports/MSVC++/2015/win32/${platformName}/Release/lib${it}.lib"
+      println "${base}/${it}.lib"
+      assert file("$projectDir/mp3/mpg123-${mpg123Version}/ports/MSVC++/2015/win32/${platformName}/Release/lib${it}.lib").renameTo("${base}/${it}.lib")
     }
   }
 }
@@ -253,6 +278,7 @@ def prepareOggOnLinux(force) {
 def prepareBuilds(force) {
   if (Os.isFamily(Os.FAMILY_WINDOWS)) {
     buildOpusOnWindows(force)
+    buildMpgOnWindows(force)
   } else {
     prepareOggOnLinux(force)
     buildOpusOnLinux(force)
