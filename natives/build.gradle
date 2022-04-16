@@ -129,7 +129,8 @@ def getDevEnvLocation() {
     cmakeProcess.consumeProcessOutput(outStream, outStream)
     cmakeProcess.waitFor()
 
-    def matcher = Pattern.compile("working C compiler: ([^\\n]*) -- works").matcher(outStream)
+    // cmake version 3.23.1, VS2022
+    def matcher = Pattern.compile("working C compiler: ([^\\n]*) -").matcher(outStream)
     matcher.find()
 
     def baseDirectory = file(matcher.group(1))
