@@ -4,11 +4,7 @@ plugins {
 
 allprojects {
   repositories {
-    mavenLocal()
     mavenCentral()
-    maven {
-      url 'https://m2.dv8tion.net/releases'
-    }
   }
 
   apply plugin: 'java'
@@ -17,18 +13,6 @@ allprojects {
 
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
-
-  publishing {
-    repositories {
-      maven {
-        url "s3://m2.dv8tion.net/releases"
-        credentials(AwsCredentials) {
-          accessKey project.findProperty("sedmelluqMavenS3AccessKey") as String
-          secretKey project.findProperty("sedmelluqMavenS3SecretKey") as String
-        }
-      }
-    }
-  }
 }
 
 group = 'com.sedmelluq'
