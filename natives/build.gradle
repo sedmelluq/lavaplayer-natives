@@ -4,6 +4,7 @@ plugins {
 
 import org.apache.tools.ant.taskdefs.condition.Os
 
+import java.nio.file.Files
 import java.util.regex.Pattern
 
 apply plugin: 'de.undercouch.download'
@@ -12,6 +13,7 @@ apply from: 'natives.gradle'
 
 ext.opusVersion = '1.3.1'
 ext.mpg123Version = '1.25.15'
+ext.mpg123x8664Version = "1.25.13"
 ext.oggVersion = '1.3.3'
 ext.vorbisVersion = '1.3.6'
 ext.sampleRateVersion = '0.1.9'
@@ -112,6 +114,22 @@ task load { doLast {
       into "$projectDir/mp3"
     }
   }
+
+  if (!file("$projectDir/mp3/mpg123-${mpg123x8664Version}-x86-64").exists()) {
+    def downloadPath = "$buildDir/tmp/temp.zip"
+    def unpackPath = "$buildDir"
+
+    download {
+      src "https://www.mpg123.de/download/win64/${mpg123x8664Version}/mpg123-${mpg123x8664Version}-x86-64.zip"
+      dest downloadPath
+    }
+
+    copy {
+      println zipTree(file(downloadPath))
+      from zipTree(file(downloadPath))
+      into "$projectDir/mp3"
+    }
+  }
 }}
 
 ext.devEnvPath = null
@@ -151,7 +169,6 @@ def buildOpusOnWindows(force) {
   def present = libs.every { file("${base}/${it}.lib").exists() }
 
   if (force || !present) {
-    file(base).deleteDir()
     file(base).mkdirs()
 
     def devenv = getDevEnvLocation()
@@ -174,7 +191,6 @@ def buildMpgOnWindows(force) {
   def present = libs.every { file("${base}/${it}.lib").exists() }
 
   if (force || !present) {
-    file(base).deleteDir()
     file(base).mkdirs()
 
     def devenv = getDevEnvLocation()
@@ -186,10 +202,28 @@ def buildMpgOnWindows(force) {
     process.waitForProcessOutput(System.out as Appendable, System.err)
 
     libs.each {
-      println "$projectDir/mp3/mpg123-${mpg123Version}/ports/MSVC++/2015/win32/${platformName}/Release/lib${it}.lib"
-      println "${base}/${it}.lib"
       assert file("$projectDir/mp3/mpg123-${mpg123Version}/ports/MSVC++/2015/win32/${platformName}/Release/lib${it}.lib").renameTo("${base}/${it}.lib")
     }
+  }
+}
+
+def copyMpgDLLOnWindows(force) {
+  def it = "libmpg123-0.dll"
+
+  def base = "$projectDir/dist/win-x86-64"
+  def present = file("$base/$it").exists()
+
+  if (force || !present) {
+    file(base).mkdirs()
+
+    def target = file("$base/$it").toPath()
+
+    Files.copy(
+            file("$projectDir/mp3/mpg123-${mpg123x8664Version}-x86-64/$it").toPath(),
+            target
+    )
+
+    assert Files.exists(target)
   }
 }
 
@@ -279,6 +313,7 @@ def prepareBuilds(force) {
   if (Os.isFamily(Os.FAMILY_WINDOWS)) {
     buildOpusOnWindows(force)
     buildMpgOnWindows(force)
+    copyMpgDLLOnWindows(force)
   } else {
     prepareOggOnLinux(force)
     buildOpusOnLinux(force)
