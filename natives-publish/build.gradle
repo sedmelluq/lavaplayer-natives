@@ -16,10 +16,6 @@ publishing {
       groupId rootProject.group
       artifactId moduleName
       from components.java
-
-      artifact sourceJar {
-        classifier 'sources'
-      }
     }
   }
 }
