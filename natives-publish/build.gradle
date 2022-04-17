@@ -6,8 +6,8 @@ plugins {
 version = '1.3.14.0'
 ext.moduleName = 'lavaplayer-natives'
 
-task sourceJar(type: Jar) {
-  from sourceSets.main.allJava
+java {
+  withSourcesJar()
 }
 
 publishing {
