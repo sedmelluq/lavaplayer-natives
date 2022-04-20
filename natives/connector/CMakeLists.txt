@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(connector C)
 
+set (CMAKE_C_STANDARD 99)
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	include_directories("$ENV{JAVA_HOME}/include/win32")
 	set(SYSNAME "win")
